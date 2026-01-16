@@ -1,5 +1,6 @@
 -- Pull in the wezterm API
 local wezterm = require("wezterm")
+local act = wezterm.action
 
 -- if you are *NOT* lazy-loading smart-splits.nvim (recommended)
 local function is_vim(pane)
@@ -18,6 +19,14 @@ config.initial_rows = 28
 
 -- or, changing the font size and color scheme.
 config.font_size = 12
+-- config.font = wezterm.font({
+-- 	family = "JetBrains Mono",
+-- 	harfbuzz_features = {
+-- 		"calt=0",
+-- 		"clig=0",
+-- 		"liga=0",
+-- 	},
+-- })
 
 -- color scheming
 -- The set of schemes that we like and want to put in our rotation
@@ -42,7 +51,7 @@ end)
 -- config.color_scheme = "Wez"
 -- config.window_background_opacity = 0.9
 config.tab_bar_at_bottom = true
-config.use_fancy_tab_bar = true
+config.use_fancy_tab_bar = false
 
 -----------
 -- Keymaps
@@ -81,16 +90,32 @@ local function split_nav(resize_or_move, key)
 	}
 end
 
+local function scrollback_or_send(key, scroll_dir)
+	return {
+		key = key,
+		mods = "CTRL",
+		action = wezterm.action_callback(function(window, pane)
+			if is_vim(pane) then
+				-- Forward Ctrl+<key> to Neovim
+				window:perform_action(act.SendKey({ key = key, mods = "CTRL" }), pane)
+			else
+				-- Scroll terminal scrollback
+				window:perform_action(act.ScrollByPage(scroll_dir), pane)
+			end
+		end),
+	}
+end
+
 config.keys = {
 	{
 		key = "[",
 		mods = "LEADER",
-		action = wezterm.action.ActivateCopyMode,
+		action = act.ActivateCopyMode,
 	},
 	{
 		key = "c",
 		mods = "LEADER",
-		action = wezterm.action.SpawnTab("CurrentPaneDomain"),
+		action = act.SpawnTab("CurrentPaneDomain"),
 	},
 	-- move between split panes
 	split_nav("move", "h"),
@@ -102,6 +127,38 @@ config.keys = {
 	split_nav("resize", "j"),
 	split_nav("resize", "k"),
 	split_nav("resize", "l"),
+	{
+		key = "h",
+		mods = "CMD|SHIFT",
+		action = act.ActivateTab(0),
+	},
+	{
+		key = "j",
+		mods = "CMD|SHIFT",
+		action = act.ActivateTab(1),
+	},
+	{
+		key = "k",
+		mods = "CMD|SHIFT",
+		action = act.ActivateTab(2),
+	},
+	{
+		key = "l",
+		mods = "CMD|SHIFT",
+		action = act.ActivateTab(3),
+	},
+	{
+		key = "n",
+		mods = "CMD|SHIFT",
+		action = act.ActivateTabRelative(1),
+	},
+	{
+		key = "p",
+		mods = "CMD|SHIFT",
+		action = act.ActivateTabRelative(-1),
+	},
+	scrollback_or_send("u", -0.5),
+	scrollback_or_send("d", 0.5),
 }
 
 -- Finally, return the configuration to wezterm:
