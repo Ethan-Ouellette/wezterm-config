@@ -93,11 +93,11 @@ end
 local function scrollback_or_send(key, scroll_dir)
 	return {
 		key = key,
-		mods = "CTRL",
+		mods = "CTRL|SHIFT",
 		action = wezterm.action_callback(function(window, pane)
 			if is_vim(pane) then
 				-- Forward Ctrl+<key> to Neovim
-				window:perform_action(act.SendKey({ key = key, mods = "CTRL" }), pane)
+				window:perform_action(act.SendKey({ key = key, mods = "CTRL|SHIFT" }), pane)
 			else
 				-- Scroll terminal scrollback
 				window:perform_action(act.ScrollByPage(scroll_dir), pane)
