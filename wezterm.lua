@@ -139,7 +139,7 @@ config.keys = {
 	},
 	{
 		key = "k",
-		mods = "CMD|SHIFT",
+		mods = "CMD|CTRL",
 		action = act.ActivateTab(2),
 	},
 	{
